@@ -1,4 +1,4 @@
-module github.com/blacktop/TEMPLATE
+module github.com/blacktop/8sleep
 
 go 1.24
 

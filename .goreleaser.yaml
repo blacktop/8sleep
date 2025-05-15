@@ -18,7 +18,7 @@ before:
 
 builds:
   - id: default
-    binary: TEMPLATE
+    binary: 8sleep
     env:
       - CGO_ENABLED=0
     goos:
@@ -66,16 +66,16 @@ brews:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
     goarm: "7"
-    homepage: https://github.com/blacktop/TEMPLATE
-    description: TEMPLATE
+    homepage: https://github.com/blacktop/8sleep
+    description: Control 8sleep via CLI
     license: MIT
     install: |
-      bin.install "TEMPLATE"
-      bash_completion.install "completions/_bash" => "TEMPLATE"
-      zsh_completion.install "completions/_zsh" => "_TEMPLATE"
-      fish_completion.install "completions/_fish" => "TEMPLATE.fish"
+      bin.install "8sleep"
+      bash_completion.install "completions/_bash" => "8sleep"
+      zsh_completion.install "completions/_zsh" => "_8sleep"
+      fish_completion.install "completions/_fish" => "8sleep.fish"
     test: |
-      system "#{bin}/TEMPLATE --help"
+      system "#{bin}/8sleep --help"
 
 changelog:
   sort: asc
@@ -113,7 +113,7 @@ changelog:
 release:
   footer: |
     ### Summary
-    **Full Changelog**: https://github.com/blacktop/TEMPLATE/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/blacktop/8sleep/compare/{{ .PreviousTag }}...{{ .Tag }}
     ## What to do next?
     - Follow us on [Twitter](https://twitter.com/blacktop__)
     - Follow us on [Mastodon](https://mastodon.social/@blacktop)

@@ -1,14 +1,14 @@
 <p align="center">
-  <a href="https://github.com/blacktop/TEMPLATE"><img alt="TEMPLATE Logo" src="https://raw.githubusercontent.com/blacktop/TEMPLATE/main/docs/logo.webp" /></a>
-  <h1 align="center">TEMPLATE</h1>
-  <h4><p align="center">Go Project Template</p></h4>
+  <a href="https://github.com/blacktop/8sleep"><img alt="8sleep Logo" src="https://raw.githubusercontent.com/blacktop/8sleep/main/docs/logo.webp" /></a>
+  <h1 align="center">8sleep</h1>
+  <h4><p align="center">Control 8sleep via CLI</p></h4>
   <p align="center">
-    <a href="https://github.com/blacktop/TEMPLATE/actions" alt="Actions">
-          <img src="https://github.com/blacktop/TEMPLATE/actions/workflows/go.yml/badge.svg" /></a>
-    <a href="https://github.com/blacktop/TEMPLATE/releases/latest" alt="Downloads">
-          <img src="https://img.shields.io/github/downloads/blacktop/TEMPLATE/total.svg" /></a>
-    <a href="https://github.com/blacktop/TEMPLATE/releases" alt="GitHub Release">
-          <img src="https://img.shields.io/github/release/blacktop/TEMPLATE.svg" /></a>
+    <a href="https://github.com/blacktop/8sleep/actions" alt="Actions">
+          <img src="https://github.com/blacktop/8sleep/actions/workflows/go.yml/badge.svg" /></a>
+    <a href="https://github.com/blacktop/8sleep/releases/latest" alt="Downloads">
+          <img src="https://img.shields.io/github/downloads/blacktop/8sleep/total.svg" /></a>
+    <a href="https://github.com/blacktop/8sleep/releases" alt="GitHub Release">
+          <img src="https://img.shields.io/github/release/blacktop/8sleep.svg" /></a>
     <a href="http://doge.mit-license.org" alt="LICENSE">
           <img src="https://img.shields.io/:license-mit-blue.svg" /></a>
 </p>
@@ -23,10 +23,10 @@
 ### Install
 
 ```bash
-go install github.com/blacktop/TEMPLATE@latest
+go install github.com/blacktop/8sleep@latest
 ```
 
-Or download the latest [release](https://github.com/blacktop/TEMPLATE/releases/latest)
+Or download the latest [release](https://github.com/blacktop/8sleep/releases/latest)
 
 <!-- Fill this out -->
 
@@ -34,4 +34,4 @@ Or download the latest [release](https://github.com/blacktop/TEMPLATE/releases/l
 
 ## License
 
-MIT Copyright (c) <YEAR> **blacktop**
+MIT Copyright (c) 2025 **blacktop**
