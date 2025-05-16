@@ -30,11 +30,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-// statsCmd represents the stats command
-var statsCmd = &cobra.Command{
-	Use:   "stats",
-	Short: "Show Eight Sleep Stats",
-	Args:  cobra.NoArgs,
+// alarmCmd represents the alarm command
+var alarmCmd = &cobra.Command{
+	Use:    "alarm",
+	Short:  "Set Eight Sleep Alarm",
+	Args:   cobra.NoArgs,
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
 			log.SetLevel(log.DebugLevel)
@@ -54,23 +55,15 @@ var statsCmd = &cobra.Command{
 			return fmt.Errorf("failed to start client: %w", err)
 		}
 
-		if err := cli.TurnOn(cmd.Context()); err != nil {
+		if err := cli.SetAlarm(cmd.Context(), "08:00:00"); err != nil {
 			return err
 		}
-
-		logger.Info("STATS")
-		if _, err := cli.Stats(cmd.Context()); err != nil {
-			return fmt.Errorf("failed to get stats: %w", err)
-		}
-
-		if err := cli.TurnOff(cmd.Context()); err != nil {
-			return err
-		}
+		logger.Info("Device Alarm Set")
 
 		return nil
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(statsCmd)
+	rootCmd.AddCommand(alarmCmd)
 }

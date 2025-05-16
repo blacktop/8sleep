@@ -224,6 +224,80 @@ func (c *Client) GetAudioTracks(ctx context.Context) (map[string]any, error) {
 	return data, nil
 }
 
+func (c *Client) SetAlarm(ctx context.Context, time string) error {
+	url := fmt.Sprintf("%s/v2/users/%s/routines/%s", appAPIURL, c.me.ID, "1234")
+	body := map[string]any{
+		"id":      "1234",
+		"alarms":  []any{},
+		"days":    []string{"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"},
+		"enabled": true,
+		"bedtime": map[string]any{
+			"time":      "22:30:00",
+			"dayOffset": "MinusOne",
+		},
+		"alarmsToCreate": []map[string]any{
+			{
+				"enabled":              true,
+				"disabledIndividually": false,
+				"timeWithOffset": map[string]any{
+					"time":      time,
+					"dayOffset": "Zero",
+				},
+				"settings": map[string]any{
+					"vibration": map[string]any{
+						"enabled":    true,
+						"powerLevel": 50,
+						"pattern":    "rise",
+					},
+					"thermal": map[string]any{
+						"enabled": true,
+						"level":   20,
+					},
+				},
+				"dismissedUntil": "1970-01-01T00:00:00Z",
+				"snoozedUntil":   "1970-01-01T00:00:00Z",
+			},
+		},
+	}
+	var resp map[string]any
+	if err := c.doJSON(ctx, http.MethodPut, url, body, &resp); err != nil {
+		return fmt.Errorf("failed to set alarm: %w", err)
+	}
+	// TODO: check if alarm was set successfully via response JSON
+	if log.GetLevel() == log.DebugLevel {
+		if err := prettyPrint(resp); err != nil {
+			return fmt.Errorf("failed to pretty print response: %w", err)
+		}
+	}
+	return nil
+}
+
+func (c *Client) Status(ctx context.Context) {
+	for _, device := range c.devices {
+		if device.LeftKelvin.Active || device.RightKelvin.Active {
+			fmt.Printf("Eight Sleep is ON\n")
+			if device.LeftKelvin.Active {
+				fmt.Printf("Left side: %s\n", device.LeftKelvin.CurrentActivity)
+				if device.LeftHeatingLevel < device.LeftTargetHeatingLevel {
+					fmt.Printf("Left side target heating to level %d from %d\n", device.LeftTargetHeatingLevel, device.LeftHeatingLevel)
+				} else if device.LeftHeatingLevel > device.LeftTargetHeatingLevel {
+					fmt.Printf("Left side target cooling to level %d from %d\n", device.LeftTargetHeatingLevel, device.LeftHeatingLevel)
+				}
+			}
+			if device.RightKelvin.Active {
+				fmt.Printf("Right side: %s\n", device.RightKelvin.CurrentActivity)
+				if device.RightHeatingLevel < device.RightTargetHeatingLevel {
+					fmt.Printf("Right side target heating to level %d from %d\n", device.RightTargetHeatingLevel, device.RightHeatingLevel)
+				} else if device.RightHeatingLevel > device.RightTargetHeatingLevel {
+					fmt.Printf("Right side target cooling to level %d from %d\n", device.RightTargetHeatingLevel, device.RightHeatingLevel)
+				}
+			}
+		} else {
+			fmt.Printf("Eight Sleep is OFF\n")
+		}
+	}
+}
+
 /* -------------------- internal helpers -------------------- */
 
 func (c *Client) headers() http.Header {
@@ -335,12 +409,9 @@ func (c *Client) fetchTrends(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch trends: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	log.Info("TRENDS")
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -368,12 +439,9 @@ func (c *Client) fetchIntervals(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch intervals: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	log.Info("INTERVALS")
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -401,12 +469,9 @@ func (c *Client) fetchRoutines(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch routines: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	log.Info("ROUTINES")
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -422,12 +487,9 @@ func (c *Client) fetchHealthSurveyTestDrive(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch routines: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	log.Info("HEALTH SURVEY TEST DRIVE")
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -443,12 +505,9 @@ func (c *Client) fetchSubscriptions(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch subscriptions: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	log.Info("SUBSCRIPTIONS")
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -460,16 +519,13 @@ func (c *Client) fetchAutopilotDetails(ctx context.Context) error {
 		return fmt.Errorf("failed to parse autopilot details URL: %w", err)
 	}
 	var data map[string]any
+	log.Info("AUTOPILOT DETAILS")
 	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
 		return fmt.Errorf("failed to fetch autopilot details: %w", err)
 	}
 	c.mu.Lock()
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal json: %v", err)
-	}
-	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
-		return fmt.Errorf("failed to highlight json: %v", err)
+	if err := prettyPrint(data); err != nil {
+		return fmt.Errorf("failed to pretty print response: %w", err)
 	}
 	c.mu.Unlock()
 	return nil
@@ -523,4 +579,15 @@ func (c *Client) doJSON(ctx context.Context, method, url string, payload any, ou
 	log.Debugf("HTTP %s %s: %d\n%s", method, url, res.StatusCode, string(data))
 
 	return json.NewDecoder(bytes.NewReader(data)).Decode(out)
+}
+
+func prettyPrint(data any) error {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	return nil
 }
