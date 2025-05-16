@@ -36,6 +36,9 @@ brew install blacktop/tap/clim8
 ### Running
 
 ```bash
+❱ clim8 --help
+```
+```bash
 Eight Sleep CLI
 
 Usage:
@@ -43,9 +46,9 @@ Usage:
 
 Available Commands:
   help        Help about any command
-  off         Turn off the clim8 Pod
-  on          Turn on the clim8 Pod
-  temp        Set the temperature of the clim8 Pod
+  off         Turn off the Eight Sleep Pod
+  on          Turn on the Eight Sleep Pod
+  temp        Set the temperature of the Eight Sleep Pod
 
 Flags:
   -e, --email string      Email address
