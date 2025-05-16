@@ -59,8 +59,6 @@ Flags:
 Use "clim8 [command] --help" for more information about a command.
 ```
 
-![demo](vhs.gif)
-
 ## License
 
 MIT Copyright (c) 2025 **blacktop**
