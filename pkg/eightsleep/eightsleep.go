@@ -184,7 +184,7 @@ func (c *Client) refreshToken(ctx context.Context) error {
 		UserID      string  `json:"userId"`
 	}
 	if err := c.doJSON(ctx, http.MethodPost, authURL, body, &res); err != nil {
-		return err
+		return fmt.Errorf("failed to refresh token: %w", err)
 	}
 
 	c.mu.Lock()
@@ -203,7 +203,7 @@ func (c *Client) fetchProfile(ctx context.Context) error {
 		User Profile `json:"user"`
 	}
 	if err := c.doJSON(ctx, http.MethodGet, url, nil, &data); err != nil {
-		return err
+		return fmt.Errorf("failed to fetch profile: %w", err)
 	}
 	c.mu.Lock()
 	for _, f := range data.User.Features {
@@ -226,7 +226,7 @@ func (c *Client) fetchDevices(ctx context.Context) error {
 			Result Device `json:"result"`
 		}
 		if err := c.doJSON(ctx, http.MethodGet, url, nil, &data); err != nil {
-			return err
+			return fmt.Errorf("failed to fetch device %s: %w", device, err)
 		}
 		c.mu.Lock()
 		c.devices = append(c.devices, data.Result)
@@ -261,7 +261,7 @@ func (c *Client) doJSON(ctx context.Context, method, url string, payload any, ou
 	defer res.Body.Close()
 
 	if res.StatusCode >= 300 {
-		return fmt.Errorf("HTTP %d", res.StatusCode)
+		return fmt.Errorf("HTTP %d: %s", res.StatusCode, res.Status)
 	}
 
 	data, err := io.ReadAll(res.Body)
