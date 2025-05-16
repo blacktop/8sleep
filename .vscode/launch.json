@@ -29,7 +29,6 @@
                 "-V",
                 "stats",
             ],
-            "envFile": "${workspaceRoot}/.vscode/.env",
             "showLog": false
         },
         {
@@ -43,7 +42,6 @@
                 "-V",
                 "tracks",
             ],
-            "envFile": "${workspaceRoot}/.vscode/.env",
             "showLog": false
         },
     ]

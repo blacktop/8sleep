@@ -226,7 +226,7 @@ func (c *Client) GetAudioTracks(ctx context.Context) (map[string]any, error) {
 
 /* -------------------- internal helpers -------------------- */
 
-func (c *Client) Headers() http.Header {
+func (c *Client) headers() http.Header {
 	h := http.Header{}
 	h.Set("Content-Type", "application/json")
 	h.Set("Accept", "application/json")
@@ -492,7 +492,7 @@ func (c *Client) doJSON(ctx context.Context, method, url string, payload any, ou
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header = c.Headers()
+	req.Header = c.headers()
 
 	res, err := c.http.Do(req)
 	if err != nil {

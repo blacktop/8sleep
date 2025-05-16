@@ -33,7 +33,7 @@ import (
 // tempCmd represents the temp command
 var tempCmd = &cobra.Command{
 	Use:   "temp",
-	Short: "Set the temperature of the Eight Sleep Pod",
+	Short: "Set the temperature of Eight Sleep Pod",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {

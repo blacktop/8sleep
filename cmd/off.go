@@ -33,7 +33,7 @@ import (
 // offCmd represents the off command
 var offCmd = &cobra.Command{
 	Use:   "off",
-	Short: "Turn off the Eight Sleep Pod",
+	Short: "Turn off Eight Sleep Pod",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
