@@ -25,9 +25,9 @@ builds:
       - linux
       - windows
       - darwin
-    ignore:
-      - goos: windows
-        goarch: arm
+    goarch:
+      - amd64
+      - arm64
     mod_timestamp: "{{ .CommitTimestamp }}"
     flags:
       - -trimpath
@@ -74,6 +74,12 @@ brews:
       bash_completion.install "completions/_bash" => "8sleep"
       zsh_completion.install "completions/_zsh" => "_8sleep"
       fish_completion.install "completions/_fish" => "8sleep.fish"
+    service: |
+      run [opt_bin/"8sleep", "temp", "75F"]
+      run_type :cron
+      cron "0 23 * * *"
+      log_path var/"log/8sleep.log"
+      error_log_path var/"log/8sleep.err.log"
     test: |
       system "#{bin}/8sleep --help"
 
