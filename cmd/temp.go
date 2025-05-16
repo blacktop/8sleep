@@ -34,7 +34,7 @@ import (
 var tempCmd = &cobra.Command{
 	Use:   "temp",
 	Short: "Set the temperature of Eight Sleep Pod",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
 			log.SetLevel(log.DebugLevel)
@@ -58,10 +58,10 @@ var tempCmd = &cobra.Command{
 			return err
 		}
 
-		if err := cli.SetTemperature(cmd.Context(), args[0]); err != nil {
+		if err := cli.SetTemperature(cmd.Context(), viper.GetString("temp.degrees")); err != nil {
 			return err
 		}
-		logger.Info("Temperature Set", "temp", args[0])
+		logger.Info("Temperature Set", "temp", viper.GetString("temp.degrees"))
 
 		return nil
 	},
@@ -69,4 +69,7 @@ var tempCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(tempCmd)
+
+	tempCmd.Flags().StringP("degrees", "d", "", "Degrees")
+	viper.BindPFlag("temp.degrees", tempCmd.Flags().Lookup("degrees"))
 }

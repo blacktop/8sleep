@@ -59,6 +59,17 @@ Flags:
 Use "clim8 [command] --help" for more information about a command.
 ```
 
+### Config
+
+Set your config `~/.config/clim8/config.yml`
+
+```yml
+email: your@email.com
+password: your-password
+temp:
+  degrees: 75F # or 24C
+```
+
 ## License
 
 MIT Copyright (c) 2025 **blacktop**
