@@ -32,7 +32,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w
+      - -s -w -X github.com/blacktop/clim8/cmd.Version={{.Version}}
 
 universal_binaries:
   - replace: false
