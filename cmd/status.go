@@ -53,7 +53,7 @@ var statusCmd = &cobra.Command{
 		if err := cli.Start(cmd.Context()); err != nil {
 			return fmt.Errorf("failed to start client: %w", err)
 		}
-		log.Info("STATUS")
+		logger.Info("STATUS")
 		cli.Status(cmd.Context())
 
 		return nil
