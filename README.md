@@ -16,7 +16,7 @@
 
 ## Why? 🤔
 
-<!-- Fill this out -->
+Oh, I think you know why 😏
 
 ## Getting Started
 
@@ -28,7 +28,34 @@ go install github.com/blacktop/8sleep@latest
 
 Or download the latest [release](https://github.com/blacktop/8sleep/releases/latest)
 
-<!-- Fill this out -->
+Or via [homebrew](https://brew.sh)
+
+```bash
+brew install blacktop/tap/8sleep
+```
+
+### Running
+
+```bash
+8sleep CLI
+
+Usage:
+  8sleep [command]
+
+Available Commands:
+  help        Help about any command
+  off         Turn off the 8Sleep Pod
+  on          Turn on the 8Sleep Pod
+  temp        Set the temperature of the 8Sleep Pod
+
+Flags:
+  -e, --email string      Email address
+  -h, --help              help for 8sleep
+  -p, --password string   Password
+  -V, --verbose           Enable verbose debug logging
+
+Use "8sleep [command] --help" for more information about a command.
+```
 
 ![demo](vhs.gif)
 
