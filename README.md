@@ -25,13 +25,13 @@ Oh, I think you know why 😏
 go install github.com/blacktop/clim8@latest
 ```
 
-Or download the latest [release](https://github.com/blacktop/clim8/releases/latest)
-
 Or via [homebrew](https://brew.sh)
 
 ```bash
 brew install blacktop/tap/clim8
 ```
+
+Or download the latest [release](https://github.com/blacktop/clim8/releases/latest)
 
 ### Running
 
