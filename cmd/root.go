@@ -22,12 +22,10 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/blacktop/8sleep/pkg/eightsleep"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -64,6 +62,8 @@ func init() {
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("email", rootCmd.PersistentFlags().Lookup("email"))
 	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
+	// Settings
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 }
 
 func initConfig() {
@@ -90,47 +90,13 @@ func initConfig() {
 var rootCmd = &cobra.Command{
 	Use:   "8sleep",
 	Short: "8sleep CLI",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("verbose") {
-			log.SetLevel(log.DebugLevel)
-		}
-
-		email := viper.GetString("email")
-		password := viper.GetString("password")
-
-		logger.Info("Starting 8sleep CLI")
-		cli, err := eightsleep.NewClient(email, password, "America/New_York")
-		if err != nil {
-			return fmt.Errorf("failed to create client: %w", err)
-		}
-		defer cli.Stop()
-
-		if err := cli.Start(cmd.Context()); err != nil {
-			return fmt.Errorf("failed to start client: %w", err)
-		}
-
-		if err := cli.TurnOn(cmd.Context()); err != nil {
-			return err
-		}
-		logger.Info("Device turned on")
-
-		if err := cli.SetTemperature(cmd.Context(), 75, eightsleep.Fahrenheit); err != nil {
-			return err
-		}
-
-		if err := cli.TurnOff(cmd.Context()); err != nil {
-			return err
-		}
-		logger.Info("Device turned off")
-
-		return nil
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal("Failed to execute command", "error", err)
+		log.Error(err.Error())
+		os.Exit(1)
 	}
 }

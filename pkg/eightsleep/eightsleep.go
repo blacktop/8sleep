@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -128,10 +130,25 @@ func (c *Client) TurnOff(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client) SetTemperature(ctx context.Context, degrees int, unit UnitOfTemperature) error {
+func (c *Client) SetTemperature(ctx context.Context, degrees string) error {
+	// parse degrees
+	var unit UnitOfTemperature
+	switch {
+	case strings.HasSuffix(degrees, "C"):
+		unit = Celsius
+	case strings.HasSuffix(degrees, "F"):
+		unit = Fahrenheit
+	default:
+		return fmt.Errorf("invalid temperature format: %s (must end with C or F)", degrees)
+	}
+	temp, err := strconv.Atoi(strings.Trim(degrees, "CF"))
+	if err != nil {
+		return fmt.Errorf("invalid temperature value: %s", degrees)
+	}
+
 	url := fmt.Sprintf("%s/v1/users/%s/temperature/pod?ignoreDeviceErrors=false", appAPIURL, c.me.ID)
 	body := map[string]any{
-		"currentLevel": tempToHeatingLevel(degrees, unit),
+		"currentLevel": tempToHeatingLevel(temp, unit),
 	}
 	var resp TemperatureState
 	if err := c.doJSON(ctx, http.MethodPut, url, body, &resp); err != nil {
@@ -139,7 +156,7 @@ func (c *Client) SetTemperature(ctx context.Context, degrees int, unit UnitOfTem
 	}
 
 	for _, device := range resp.Devices {
-		if device.CurrentLevel != tempToHeatingLevel(degrees, unit) {
+		if device.CurrentLevel != tempToHeatingLevel(temp, unit) {
 			return fmt.Errorf("failed to set temperature on device %s: %s", device.Device.DeviceID, device.CurrentState.Type)
 		}
 	}
