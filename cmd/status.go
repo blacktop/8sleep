@@ -32,10 +32,9 @@ import (
 
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
-	Use:    "status",
-	Short:  "Show Eight Sleep status",
-	Args:   cobra.NoArgs,
-	Hidden: true,
+	Use:   "status",
+	Short: "Show Eight Sleep status",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
 			log.SetLevel(log.DebugLevel)
