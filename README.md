@@ -1,6 +1,5 @@
 <p align="center">
-  <a href="https://github.com/blacktop/clim8"><img alt="clim8 Logo" src="https://raw.githubusercontent.com/blacktop/clim8/main/docs/logo.png" height="500" /></a>
-  <h1 align="center">clim8</h1>
+  <a href="https://github.com/blacktop/clim8"><img alt="clim8 Logo" src="https://raw.githubusercontent.com/blacktop/clim8/main/docs/logo.png" height="400" /></a>
   <h4><p align="center">Control Eight Sleep via CLI</p></h4>
   <p align="center">
     <a href="https://github.com/blacktop/clim8/actions" alt="Actions">
