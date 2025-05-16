@@ -8,11 +8,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/charmbracelet/log"
 )
 
@@ -164,6 +167,63 @@ func (c *Client) SetTemperature(ctx context.Context, degrees string) error {
 	return nil
 }
 
+func (c *Client) Stats(ctx context.Context) (map[string]any, error) {
+	if err := c.fetchTrends(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch trends: %w", err)
+	}
+	if err := c.fetchIntervals(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch intervals: %w", err)
+	}
+	if err := c.fetchRoutines(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch routines: %w", err)
+	}
+	if err := c.fetchHealthSurveyTestDrive(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch health survey test drive: %w", err)
+	}
+	if err := c.fetchSubscriptions(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch subscriptions: %w", err)
+	}
+	if err := c.fetchAutopilotDetails(ctx); err != nil {
+		return nil, fmt.Errorf("failed to fetch autopilot details: %w", err)
+	}
+	return nil, nil
+}
+
+func (c *Client) GetReleaseFeatures(ctx context.Context) (map[string]any, error) {
+	url := appAPIURL + "/v1/users/" + c.me.ID + "/release-features"
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url, nil, &data); err != nil {
+		return nil, fmt.Errorf("failed to fetch release features: %w", err)
+	}
+	return data, nil
+}
+
+func (c *Client) GetAudioTracks(ctx context.Context) (map[string]any, error) {
+	url := appAPIURL + "/v1/audio/categories"
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url, nil, &data); err != nil {
+		return nil, fmt.Errorf("failed to fetch audio categories: %w", err)
+	}
+	categories := data["categories"].([]any)
+	for idx, category := range categories {
+		url := appAPIURL + "/v1/users/" + c.me.ID + "/audio/tracks?category=" + category.(map[string]any)["id"].(string)
+		var tracks map[string]any
+		if err := c.doJSON(ctx, http.MethodGet, url, nil, &tracks); err != nil {
+			return nil, fmt.Errorf("failed to fetch audio tracks: %w", err)
+		}
+		categories[idx].(map[string]any)["tracks"] = tracks["tracks"]
+		// for _, track := range tracks["tracks"].([]any) {
+		// 	url := appAPIURL + "/v1/audio/track/" + track.(map[string]any)["id"].(string)
+		// 	var trackDetails map[string]any
+		// 	if err := c.doJSON(ctx, http.MethodGet, url, nil, &trackDetails); err != nil {
+		// 		return nil, fmt.Errorf("failed to fetch audio track details: %w", err)
+		// 	}
+		// }
+	}
+	data["categories"] = categories
+	return data, nil
+}
+
 /* -------------------- internal helpers -------------------- */
 
 func (c *Client) Headers() http.Header {
@@ -249,6 +309,169 @@ func (c *Client) fetchDevices(ctx context.Context) error {
 		c.devices = append(c.devices, data.Result)
 		c.mu.Unlock()
 	}
+	return nil
+}
+
+func (c *Client) fetchTrends(ctx context.Context) error {
+	url, err := url.Parse(clientAPIURL + "/users/" + c.me.ID + "/trends")
+	if err != nil {
+		return fmt.Errorf("failed to parse trends URL: %w", err)
+	}
+	q := url.Query()
+	q.Add("tz", c.devices[0].Timezone)
+	q.Add("from", time.Now().AddDate(0, 0, -1).Format(time.DateOnly))
+	q.Add("to", time.Now().Format(time.DateOnly))
+	q.Add("include-main", "false")
+	q.Add("include-all-sessions", "true")
+	q.Add("model-version", "v2")
+	url.RawQuery = q.Encode()
+	// var data struct {
+	// 	Days          []any  `json:"days"`
+	// 	ModelVersion  string `json:"modelVersion"`
+	// 	SfsCalculator string `json:"sfsCalculator"`
+	// }
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch trends: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+func (c *Client) fetchIntervals(ctx context.Context) error {
+	url, err := url.Parse(clientAPIURL + "/users/" + c.me.ID + "/intervals")
+	if err != nil {
+		return fmt.Errorf("failed to parse intervals URL: %w", err)
+	}
+	// var data struct {
+	// 	Settings struct {
+	// 		Routines     []any `json:"routines"`
+	// 		OneOffAlarms []any `json:"oneOffAlarms"`
+	// 	} `json:"settings"`
+	// 	State struct {
+	// 		Status    string `json:"status"`
+	// 		NextAlarm struct {
+	// 			NextTimestamp string `json:"nextTimestamp"`
+	// 		} `json:"nextAlarm"`
+	// 	} `json:"state"`
+	// }
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch intervals: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+func (c *Client) fetchRoutines(ctx context.Context) error {
+	url, err := url.Parse(appAPIURL + "/v2/users/" + c.me.ID + "/routines")
+	if err != nil {
+		return fmt.Errorf("failed to parse routines URL: %w", err)
+	}
+	// var data struct {
+	// 	Settings struct {
+	// 		Routines     []any `json:"routines"`
+	// 		OneOffAlarms []any `json:"oneOffAlarms"`
+	// 	} `json:"settings"`
+	// 	State struct {
+	// 		Status    string `json:"status"`
+	// 		NextAlarm struct {
+	// 			NextTimestamp string `json:"nextTimestamp"`
+	// 		} `json:"nextAlarm"`
+	// 	} `json:"state"`
+	// }
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch routines: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+func (c *Client) fetchHealthSurveyTestDrive(ctx context.Context) error {
+	url, err := url.Parse(appAPIURL + "/v1/health-survey/test-drive")
+	if err != nil {
+		return fmt.Errorf("failed to parse health survey test drive URL: %w", err)
+	}
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch routines: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+func (c *Client) fetchSubscriptions(ctx context.Context) error {
+	url, err := url.Parse(appAPIURL + "/v3/users/" + c.me.ID + "/subscriptions")
+	if err != nil {
+		return fmt.Errorf("failed to parse subscriptions URL: %w", err)
+	}
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch subscriptions: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+func (c *Client) fetchAutopilotDetails(ctx context.Context) error {
+	url, err := url.Parse(appAPIURL + "/v1/users/" + c.me.ID + "/autopilotDetails")
+	if err != nil {
+		return fmt.Errorf("failed to parse autopilot details URL: %w", err)
+	}
+	var data map[string]any
+	if err := c.doJSON(ctx, http.MethodGet, url.String(), nil, &data); err != nil {
+		return fmt.Errorf("failed to fetch autopilot details: %w", err)
+	}
+	c.mu.Lock()
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal json: %v", err)
+	}
+	if err := quick.Highlight(os.Stdout, string(jsonData)+"\n", "json", "terminal256", "nord"); err != nil {
+		return fmt.Errorf("failed to highlight json: %v", err)
+	}
+	c.mu.Unlock()
 	return nil
 }
 
