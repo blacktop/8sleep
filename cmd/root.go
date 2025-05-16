@@ -22,43 +22,115 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/blacktop/8sleep/pkg/eightsleep"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
+)
+
+var (
+	logger *log.Logger
+	// Version stores the service's version
+	Version string
 )
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	// Override the default error level style.
+	styles := log.DefaultStyles()
+	styles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
+		SetString("ERROR").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("204")).
+		Foreground(lipgloss.Color("0"))
+	// Add a custom style for key `err`
+	styles.Keys["err"] = lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	styles.Values["err"] = lipgloss.NewStyle().Bold(true)
+	logger = log.New(os.Stderr)
+	logger.SetStyles(styles)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.8sleep.yaml)")
+	cobra.OnInitialize(initConfig)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Define CLI flags
+	rootCmd.PersistentFlags().BoolP("verbose", "V", false, "Enable verbose debug logging")
+	rootCmd.PersistentFlags().StringP("email", "e", "", "Email address")
+	rootCmd.PersistentFlags().StringP("password", "p", "", "Password")
+	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("email", rootCmd.PersistentFlags().Lookup("email"))
+	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
+}
+
+func initConfig() {
+	// Find home directory.
+	home, err := os.UserHomeDir()
+	cobra.CheckErr(err)
+
+	// Search config in home directory with name "8sleep" (without extension).
+	viper.AddConfigPath(filepath.Join(home, ".config", "8sleep"))
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+
+	viper.SetEnvPrefix("8sleep")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
+	viper.AutomaticEnv()
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		logger.Info("Using config file", "file", viper.ConfigFileUsed())
+	}
 }
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "8sleep",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "8sleep CLI",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("verbose") {
+			log.SetLevel(log.DebugLevel)
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+		email := viper.GetString("email")
+		password := viper.GetString("password")
+
+		logger.Info("Starting 8sleep CLI")
+		cli, err := eightsleep.NewClient(email, password, "America/New_York")
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+		defer cli.Stop()
+
+		if err := cli.Start(cmd.Context()); err != nil {
+			return fmt.Errorf("failed to start client: %w", err)
+		}
+
+		if err := cli.TurnOn(cmd.Context()); err != nil {
+			return err
+		}
+		logger.Info("Device turned on")
+
+		if err := cli.SetTemperature(cmd.Context(), 75, eightsleep.Fahrenheit); err != nil {
+			return err
+		}
+
+		if err := cli.TurnOff(cmd.Context()); err != nil {
+			return err
+		}
+		logger.Info("Device turned off")
+
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal("Failed to execute command", "error", err)
 	}
 }
