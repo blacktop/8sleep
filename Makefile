@@ -7,12 +7,12 @@ bump:
 .PHONY: build
 build:
 	@echo "🚀 Building Version $(shell svu current)"
-	go build -o 8sleep main.go
+	go build -o clim8 main.go
 
 .PHONY: release
 release:
 	@echo "🚀 Releasing Version $(shell svu current)"
-	goreleaser build --id default --clean --snapshot --single-target --output dist/8sleep
+	goreleaser build --id default --clean --snapshot --single-target --output dist/clim8
 
 .PHONY: snapshot
 snapshot:

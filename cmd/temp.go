@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/blacktop/8sleep/pkg/eightsleep"
+	"github.com/blacktop/clim8/pkg/eightsleep"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,7 +33,7 @@ import (
 // tempCmd represents the temp command
 var tempCmd = &cobra.Command{
 	Use:   "temp",
-	Short: "Set the temperature of the 8Sleep Pod",
+	Short: "Set the temperature of the Eight Sleep Pod",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {

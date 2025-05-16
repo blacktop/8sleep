@@ -71,12 +71,12 @@ func initConfig() {
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 
-	// Search config in home directory with name "8sleep" (without extension).
-	viper.AddConfigPath(filepath.Join(home, ".config", "8sleep"))
+	// Search config in home directory with name "clim8" (without extension).
+	viper.AddConfigPath(filepath.Join(home, ".config", "clim8"))
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 
-	viper.SetEnvPrefix("8sleep")
+	viper.SetEnvPrefix("clim8")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "_"))
 	viper.AutomaticEnv()
 
@@ -88,8 +88,8 @@ func initConfig() {
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "8sleep",
-	Short: "8sleep CLI",
+	Use:   "clim8",
+	Short: "Eight Sleep CLI",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

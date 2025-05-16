@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/blacktop/8sleep/pkg/eightsleep"
+	"github.com/blacktop/clim8/pkg/eightsleep"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,7 +33,7 @@ import (
 // onCmd represents the on command
 var onCmd = &cobra.Command{
 	Use:   "on",
-	Short: "Turn on the 8Sleep Pod",
+	Short: "Turn on the Eight Sleep Pod",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {

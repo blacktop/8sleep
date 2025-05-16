@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/blacktop/8sleep/cmd"
+import "github.com/blacktop/clim8/cmd"
 
 func main() {
 	cmd.Execute()

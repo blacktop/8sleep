@@ -1,4 +1,4 @@
-module github.com/blacktop/8sleep
+module github.com/blacktop/clim8
 
 go 1.24
 

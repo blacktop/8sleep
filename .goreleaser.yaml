@@ -18,7 +18,7 @@ before:
 
 builds:
   - id: default
-    binary: 8sleep
+    binary: clim8
     env:
       - CGO_ENABLED=0
     goos:
@@ -66,22 +66,22 @@ brews:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
     goarm: "7"
-    homepage: https://github.com/blacktop/8sleep
-    description: Control 8sleep via CLI
+    homepage: https://github.com/blacktop/clim8
+    description: Control Eight Sleep via CLI
     license: MIT
     install: |
-      bin.install "8sleep"
-      bash_completion.install "completions/_bash" => "8sleep"
-      zsh_completion.install "completions/_zsh" => "_8sleep"
-      fish_completion.install "completions/_fish" => "8sleep.fish"
+      bin.install "clim8"
+      bash_completion.install "completions/_bash" => "clim8"
+      zsh_completion.install "completions/_zsh" => "_clim8"
+      fish_completion.install "completions/_fish" => "clim8.fish"
     service: |
-      run [opt_bin/"8sleep", "temp", "75F"]
+      run [opt_bin/"clim8", "temp", "75F"]
       run_type :cron
       cron "0 23 * * *"
-      log_path var/"log/8sleep.log"
-      error_log_path var/"log/8sleep.err.log"
+      log_path var/"log/clim8.log"
+      error_log_path var/"log/clim8.err.log"
     test: |
-      system "#{bin}/8sleep --help"
+      system "#{bin}/clim8 --help"
 
 changelog:
   sort: asc
@@ -119,7 +119,7 @@ changelog:
 release:
   footer: |
     ### Summary
-    **Full Changelog**: https://github.com/blacktop/8sleep/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/blacktop/clim8/compare/{{ .PreviousTag }}...{{ .Tag }}
     ## What to do next?
     - Follow us on [Twitter](https://twitter.com/blacktop__)
     - Follow us on [Mastodon](https://mastodon.social/@blacktop)

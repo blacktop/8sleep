@@ -1,14 +1,14 @@
 <p align="center">
-  <a href="https://github.com/blacktop/8sleep"><img alt="8sleep Logo" src="https://raw.githubusercontent.com/blacktop/8sleep/main/docs/logo.webp" /></a>
-  <h1 align="center">8sleep</h1>
-  <h4><p align="center">Control 8sleep via CLI</p></h4>
+  <a href="https://github.com/blacktop/clim8"><img alt="clim8 Logo" src="https://raw.githubusercontent.com/blacktop/clim8/main/docs/logo.png" /></a>
+  <h1 align="center">clim8</h1>
+  <h4><p align="center">Control Eight Sleep via CLI</p></h4>
   <p align="center">
-    <a href="https://github.com/blacktop/8sleep/actions" alt="Actions">
-          <img src="https://github.com/blacktop/8sleep/actions/workflows/go.yml/badge.svg" /></a>
-    <a href="https://github.com/blacktop/8sleep/releases/latest" alt="Downloads">
-          <img src="https://img.shields.io/github/downloads/blacktop/8sleep/total.svg" /></a>
-    <a href="https://github.com/blacktop/8sleep/releases" alt="GitHub Release">
-          <img src="https://img.shields.io/github/release/blacktop/8sleep.svg" /></a>
+    <a href="https://github.com/blacktop/clim8/actions" alt="Actions">
+          <img src="https://github.com/blacktop/clim8/actions/workflows/go.yml/badge.svg" /></a>
+    <a href="https://github.com/blacktop/clim8/releases/latest" alt="Downloads">
+          <img src="https://img.shields.io/github/downloads/blacktop/clim8/total.svg" /></a>
+    <a href="https://github.com/blacktop/clim8/releases" alt="GitHub Release">
+          <img src="https://img.shields.io/github/release/blacktop/clim8.svg" /></a>
     <a href="http://doge.mit-license.org" alt="LICENSE">
           <img src="https://img.shields.io/:license-mit-blue.svg" /></a>
 </p>
@@ -23,38 +23,38 @@ Oh, I think you know why 😏
 ### Install
 
 ```bash
-go install github.com/blacktop/8sleep@latest
+go install github.com/blacktop/clim8@latest
 ```
 
-Or download the latest [release](https://github.com/blacktop/8sleep/releases/latest)
+Or download the latest [release](https://github.com/blacktop/clim8/releases/latest)
 
 Or via [homebrew](https://brew.sh)
 
 ```bash
-brew install blacktop/tap/8sleep
+brew install blacktop/tap/clim8
 ```
 
 ### Running
 
 ```bash
-8sleep CLI
+Eight Sleep CLI
 
 Usage:
-  8sleep [command]
+  clim8 [command]
 
 Available Commands:
   help        Help about any command
-  off         Turn off the 8Sleep Pod
-  on          Turn on the 8Sleep Pod
-  temp        Set the temperature of the 8Sleep Pod
+  off         Turn off the clim8 Pod
+  on          Turn on the clim8 Pod
+  temp        Set the temperature of the clim8 Pod
 
 Flags:
   -e, --email string      Email address
-  -h, --help              help for 8sleep
+  -h, --help              help for clim8
   -p, --password string   Password
   -V, --verbose           Enable verbose debug logging
 
-Use "8sleep [command] --help" for more information about a command.
+Use "clim8 [command] --help" for more information about a command.
 ```
 
 ![demo](vhs.gif)
