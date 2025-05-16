@@ -13,6 +13,8 @@
         "cwd": "${workspaceRoot}",
         "args": [
             "-V",
+            "temp",
+            "76F",
         ],
         "showLog": false
     },
