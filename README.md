@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/blacktop/clim8"><img alt="clim8 Logo" src="https://raw.githubusercontent.com/blacktop/clim8/main/docs/logo.png" height="400" /></a>
-  <h4><p align="center">Control Eight Sleep via CLI</p></h4>
+  <h2><p align="center">Control Eight Sleep via CLI</p></h2>
   <p align="center">
     <a href="https://github.com/blacktop/clim8/actions" alt="Actions">
           <img src="https://github.com/blacktop/clim8/actions/workflows/go.yml/badge.svg" /></a>
