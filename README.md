@@ -45,10 +45,14 @@ Usage:
   clim8 [command]
 
 Available Commands:
+  feats       Dump release features
   help        Help about any command
-  off         Turn off the Eight Sleep Pod
-  on          Turn on the Eight Sleep Pod
-  temp        Set the temperature of the Eight Sleep Pod
+  off         Turn off Eight Sleep Pod
+  on          Turn on Eight Sleep Pod
+  stats       Show Eight Sleep Stats
+  temp        Set the temperature of Eight Sleep Pod
+  tracks      List audio tracks
+  version     Show version number
 
 Flags:
   -e, --email string      Email address
@@ -57,6 +61,7 @@ Flags:
   -V, --verbose           Enable verbose debug logging
 
 Use "clim8 [command] --help" for more information about a command.
+
 ```
 
 ### Config
@@ -68,6 +73,14 @@ email: your@email.com
 password: your-password
 temp:
   degrees: 75F # or 24C
+```
+
+### Service
+
+If installed via [homebrew](https://brew.sh) you can run the `clim8 temp` command with your configured `--degrees` at 11pm every night.
+
+```bash
+brew services start blacktop/tap/clim8
 ```
 
 ## License
