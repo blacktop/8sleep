@@ -47,9 +47,10 @@ Usage:
 Available Commands:
   feats       Dump release features
   help        Help about any command
+  info        Show Eight Sleep Info
   off         Turn off Eight Sleep Pod
   on          Turn on Eight Sleep Pod
-  stats       Show Eight Sleep Stats
+  status      Show Eight Sleep status
   temp        Set the temperature of Eight Sleep Pod
   tracks      List audio tracks
   version     Show version number
@@ -61,7 +62,6 @@ Flags:
   -V, --verbose           Enable verbose debug logging
 
 Use "clim8 [command] --help" for more information about a command.
-
 ```
 
 ### Config
