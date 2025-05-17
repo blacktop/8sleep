@@ -167,7 +167,7 @@ func (c *Client) SetTemperature(ctx context.Context, degrees string) error {
 	return nil
 }
 
-func (c *Client) Stats(ctx context.Context) (map[string]any, error) {
+func (c *Client) Info(ctx context.Context) (map[string]any, error) {
 	if err := c.fetchTrends(ctx); err != nil {
 		return nil, fmt.Errorf("failed to fetch trends: %w", err)
 	}

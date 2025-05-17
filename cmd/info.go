@@ -30,10 +30,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-// statsCmd represents the stats command
-var statsCmd = &cobra.Command{
-	Use:   "stats",
-	Short: "Show Eight Sleep Stats",
+// infoCmd represents the info command
+var infoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "Show Eight Sleep Info",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
@@ -58,9 +58,9 @@ var statsCmd = &cobra.Command{
 			return err
 		}
 
-		logger.Info("STATS")
-		if _, err := cli.Stats(cmd.Context()); err != nil {
-			return fmt.Errorf("failed to get stats: %w", err)
+		logger.Info("INFO")
+		if _, err := cli.Info(cmd.Context()); err != nil {
+			return fmt.Errorf("failed to get info: %w", err)
 		}
 
 		if err := cli.TurnOff(cmd.Context()); err != nil {
@@ -72,5 +72,5 @@ var statsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(statsCmd)
+	rootCmd.AddCommand(infoCmd)
 }
