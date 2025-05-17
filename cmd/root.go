@@ -59,9 +59,12 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("verbose", "V", false, "Enable verbose debug logging")
 	rootCmd.PersistentFlags().StringP("email", "e", "", "Email address")
 	rootCmd.PersistentFlags().StringP("password", "p", "", "Password")
+	rootCmd.PersistentFlags().Bool("config-quiet", false, "silence config file loading message")
+	rootCmd.PersistentFlags().MarkHidden("config-quiet")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("email", rootCmd.PersistentFlags().Lookup("email"))
 	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
+	viper.BindPFlag("config-quiet", rootCmd.PersistentFlags().Lookup("config-quiet"))
 	// Settings
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 }
@@ -82,7 +85,9 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		logger.Info("Using config file", "file", viper.ConfigFileUsed())
+		if !viper.GetBool("config-quiet") {
+			logger.Info("Using config file", "file", viper.ConfigFileUsed())
+		}
 	}
 }
 
