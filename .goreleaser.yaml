@@ -75,11 +75,8 @@ brews:
       zsh_completion.install "completions/_zsh" => "_clim8"
       fish_completion.install "completions/_fish" => "clim8.fish"
     service: |
-      run [opt_bin/"clim8", "temp"]
-      run_type :cron
-      cron "0 23 * * *"
+      run [opt_bin/"clim8", "daemon"]
       log_path var/"log/clim8.log"
-      error_log_path var/"log/clim8.err.log"
     test: |
       system "#{bin}/clim8 --help"
 

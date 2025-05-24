@@ -32,13 +32,17 @@ import (
 
 // tempCmd represents the temp command
 var tempCmd = &cobra.Command{
-	Use:   "temp",
-	Short: "Set the temperature of Eight Sleep Pod",
-	Args:  cobra.NoArgs,
+	Use:     "temp <temperature>",
+	Short:   "Set the temperature of Eight Sleep Pod",
+	Long:    "Set the temperature of Eight Sleep Pod. Temperature must include unit (F for Fahrenheit or C for Celsius).",
+	Example: "  clim8 temp 68F\n  clim8 temp 24C\n  clim8 temp 72F",
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
 			log.SetLevel(log.DebugLevel)
 		}
+
+		temperature := args[0]
 
 		cli, err := eightsleep.NewClient(
 			viper.GetString("email"),
@@ -58,10 +62,10 @@ var tempCmd = &cobra.Command{
 			return err
 		}
 
-		if err := cli.SetTemperature(cmd.Context(), viper.GetString("temp.degrees")); err != nil {
+		if err := cli.SetTemperature(cmd.Context(), temperature); err != nil {
 			return err
 		}
-		logger.Info("Temperature Set", "temp", viper.GetString("temp.degrees"))
+		logger.Info("Temperature Set", "temp", temperature)
 
 		return nil
 	},
@@ -69,7 +73,4 @@ var tempCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(tempCmd)
-
-	tempCmd.Flags().StringP("degrees", "d", "", "Degrees")
-	viper.BindPFlag("temp.degrees", tempCmd.Flags().Lookup("degrees"))
 }

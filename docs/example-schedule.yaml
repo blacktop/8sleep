@@ -1,0 +1,34 @@
+# Example schedule configuration for clim8 daemon
+# Place this in ~/.config/clim8/config.yaml
+
+# Email and password for Eight Sleep account
+email: "your-email@example.com"
+password: "your-password"
+
+# Schedule for automated Eight Sleep control
+schedule:
+  # Turn on the pod at 10:00 PM
+  - time: "22:00"
+    action: "on"
+  
+  # Set temperature to 68°F at 10:15 PM (after turning on)
+  - time: "22:15"
+    action: "temp"
+    temperature: "68F"
+  
+  # Lower temperature for deeper sleep at 1:00 AM
+  - time: "01:00"
+    action: "temp"
+    temperature: "65F"
+  
+  # Slightly warm up before wake time at 5:30 AM
+  - time: "05:30"
+    action: "temp"
+    temperature: "70F"
+  
+  # Turn off the pod at 6:00 AM
+  - time: "06:00"
+    action: "off"
+
+# Enable verbose logging (optional)
+verbose: false 
