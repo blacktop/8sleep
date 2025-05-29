@@ -39,7 +39,7 @@ var tempCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
-			log.SetLevel(log.DebugLevel)
+			logger.SetLevel(log.DebugLevel)
 		}
 
 		temperature := args[0]

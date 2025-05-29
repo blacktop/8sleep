@@ -133,6 +133,15 @@ func (c *Client) TurnOff(ctx context.Context) error {
 	return nil
 }
 
+func (c *Client) GetTemperatureState(ctx context.Context) (*TemperatureState, error) {
+	url := fmt.Sprintf("%s/v1/users/%s/temperature/pod?ignoreDeviceErrors=false", appAPIURL, c.me.ID)
+	var resp TemperatureState
+	if err := c.doJSON(ctx, http.MethodGet, url, nil, &resp); err != nil {
+		return nil, fmt.Errorf("failed to get temperature state: %w", err)
+	}
+	return &resp, nil
+}
+
 func (c *Client) SetTemperature(ctx context.Context, degrees string) error {
 	// parse degrees
 	var unit UnitOfTemperature

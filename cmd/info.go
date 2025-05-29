@@ -37,7 +37,7 @@ var infoCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
-			log.SetLevel(log.DebugLevel)
+			logger.SetLevel(log.DebugLevel)
 		}
 
 		cli, err := eightsleep.NewClient(

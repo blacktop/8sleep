@@ -71,7 +71,7 @@ schedule:
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("verbose") {
-			log.SetLevel(log.DebugLevel)
+			logger.SetLevel(log.DebugLevel)
 		}
 
 		// Check config file security
@@ -279,6 +279,13 @@ func runScheduler(ctx context.Context, schedule []ScheduleItem) error {
 				logger.Info("New day started, reset execution tracking", "date", now.Format("2006-01-02"))
 			}
 
+			// Check and sync device state before processing schedule
+			if viper.GetBool("daemon.sync-state") {
+				if err := checkAndSyncDeviceState(ctx, schedule); err != nil {
+					logger.Warn("Failed to check/sync device state", "err", err)
+				}
+			}
+
 			if err := processSchedule(ctx, schedule, executed); err != nil {
 				logger.Error("Error processing schedule", "err", err)
 			}
@@ -400,12 +407,206 @@ func executeAction(ctx context.Context, item ScheduleItem) error {
 	return nil
 }
 
+// getExpectedState determines what the device state should be based on the schedule and current time
+func getExpectedState(schedule []ScheduleItem, now time.Time) (*ScheduleItem, error) {
+	if len(schedule) == 0 {
+		return nil, nil
+	}
+
+	// Sort schedule items by time to find the most recent one
+	var sortedItems []ScheduleItem
+	sortedItems = append(sortedItems, schedule...)
+
+	// Find the most recent schedule item that should have executed today
+	var mostRecentItem *ScheduleItem
+	var mostRecentTime time.Time
+
+	for _, item := range sortedItems {
+		scheduledTime, err := parseTime(item.Time)
+		if err != nil {
+			continue
+		}
+
+		// Check if this item should have executed today and is in the past
+		if scheduledTime.Day() == now.Day() &&
+			scheduledTime.Month() == now.Month() &&
+			scheduledTime.Year() == now.Year() &&
+			scheduledTime.Before(now) {
+
+			if mostRecentItem == nil || scheduledTime.After(mostRecentTime) {
+				mostRecentItem = &item
+				mostRecentTime = scheduledTime
+			}
+		}
+	}
+
+	return mostRecentItem, nil
+}
+
+// checkAndSyncDeviceState checks if the device is in the expected state and corrects it if needed
+func checkAndSyncDeviceState(ctx context.Context, schedule []ScheduleItem) error {
+	// Skip if dry run mode
+	if viper.GetBool("daemon.dry-run") {
+		return nil
+	}
+
+	now := time.Now()
+	expectedState, err := getExpectedState(schedule, now)
+	if err != nil {
+		return fmt.Errorf("failed to determine expected state: %w", err)
+	}
+
+	// If no expected state (e.g., before first scheduled item today), do nothing
+	if expectedState == nil {
+		return nil
+	}
+
+	// Create client to check current state
+	cli, err := eightsleep.NewClient(
+		viper.GetString("email"),
+		viper.GetString("password"),
+		viper.GetString("daemon.timezone"),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create client: %w", err)
+	}
+	defer cli.Stop()
+
+	if err := cli.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start client: %w", err)
+	}
+
+	// Get current device state
+	currentState, err := cli.GetTemperatureState(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get current temperature state: %w", err)
+	}
+
+	// Check if device state matches expected state
+	stateMatches, err := deviceStateMatches(currentState, expectedState)
+	if err != nil {
+		return fmt.Errorf("failed to check device state: %w", err)
+	}
+
+	if !stateMatches {
+		logger.Info("Device state doesn't match expected state, syncing...",
+			"expected_action", expectedState.Action,
+			"expected_temp", expectedState.Temperature)
+
+		// Execute the expected action to sync state
+		if err := executeAction(ctx, *expectedState); err != nil {
+			return fmt.Errorf("failed to sync device state: %w", err)
+		}
+
+		logger.Info("Device state synced successfully")
+	}
+
+	return nil
+}
+
+// deviceStateMatches checks if the current device state matches the expected schedule item
+func deviceStateMatches(currentState *eightsleep.TemperatureState, expectedItem *ScheduleItem) (bool, error) {
+	if len(currentState.Devices) == 0 {
+		return false, fmt.Errorf("no devices found in current state")
+	}
+
+	device := currentState.Devices[0] // Assuming single device
+
+	switch expectedItem.Action {
+	case "off":
+		return device.CurrentState.Type == "off", nil
+
+	case "on":
+		return device.CurrentState.Type != "off", nil
+
+	case "temp":
+		if device.CurrentState.Type == "off" {
+			return false, nil
+		}
+
+		// Parse expected temperature
+		if expectedItem.Temperature == "" {
+			return false, fmt.Errorf("temperature action requires temperature value")
+		}
+
+		var unit eightsleep.UnitOfTemperature
+		switch {
+		case strings.HasSuffix(expectedItem.Temperature, "C"):
+			unit = eightsleep.Celsius
+		case strings.HasSuffix(expectedItem.Temperature, "F"):
+			unit = eightsleep.Fahrenheit
+		default:
+			return false, fmt.Errorf("invalid temperature format: %s", expectedItem.Temperature)
+		}
+
+		tempStr := strings.Trim(expectedItem.Temperature, "CF")
+		expectedTemp, err := strconv.Atoi(tempStr)
+		if err != nil {
+			return false, fmt.Errorf("invalid temperature value: %s", tempStr)
+		}
+
+		// Convert expected temperature to heating level for comparison
+		expectedLevel := tempToHeatingLevel(expectedTemp, unit)
+
+		// Allow some tolerance for heating level comparison (±2 levels)
+		tolerance := 2
+		return abs(device.CurrentLevel-expectedLevel) <= tolerance, nil
+
+	default:
+		return false, fmt.Errorf("unknown action: %s", expectedItem.Action)
+	}
+}
+
+// Helper function to convert temperature to heating level (moved from eightsleep package)
+func tempToHeatingLevel(deg int, unit eightsleep.UnitOfTemperature) int {
+	// This is a simplified version - you may want to import the actual function
+	// from the eightsleep package or expose it publicly
+	var rawToF = map[int]int{
+		-100: 55, -99: 56, -97: 57, -95: 58, -94: 59, -92: 60, -90: 61, -86: 62,
+		-81: 63, -77: 64, -72: 65, -68: 66, -63: 67, -58: 68, -54: 69, -49: 70,
+		-44: 71, -40: 72, -35: 73, -31: 74, -26: 75, -21: 76, -18: 77, -17: 77,
+		-12: 78, -7: 79, -3: 80, 1: 81, 4: 82, 7: 83, 10: 84, 14: 85, 16: 86,
+		17: 86, 20: 87, 23: 88, 26: 89, 29: 90, 32: 91, 35: 92, 38: 93, 41: 94,
+		44: 95, 48: 96, 51: 97, 54: 98, 57: 99, 60: 100, 63: 101, 66: 102,
+		69: 103, 72: 104, 75: 105, 78: 106, 80: 107, 81: 107, 85: 108, 88: 109,
+		92: 110, 100: 111,
+	}
+	var rawToC = map[int]int{
+		-100: 13, -97: 14, -94: 15, -91: 16, -83: 17, -75: 18, -67: 19, -58: 20,
+		-50: 21, -42: 22, -33: 23, -25: 24, -17: 25, -8: 26, 0: 27, 6: 28,
+		11: 29, 17: 30, 22: 31, 28: 32, 33: 33, 39: 34, 44: 35, 50: 36,
+		56: 37, 61: 38, 67: 39, 72: 40, 78: 41, 83: 42, 89: 43, 100: 44,
+	}
+
+	m := rawToF
+	if unit == eightsleep.Celsius {
+		m = rawToC
+	}
+	closestKey := 0
+	minDiff := 1 << 31
+	for k, v := range m {
+		if d := abs(v - deg); d < minDiff {
+			minDiff, closestKey = d, k
+		}
+	}
+	return closestKey
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
 func init() {
 	rootCmd.AddCommand(daemonCmd)
 
 	// Add daemon-specific flags
 	daemonCmd.Flags().Bool("dry-run", false, "Show what would be executed without actually running actions")
 	daemonCmd.Flags().String("timezone", "America/New_York", "Timezone for schedule execution")
+	daemonCmd.Flags().Bool("sync-state", true, "Check and sync device state with schedule after system wake")
 	viper.BindPFlag("daemon.dry-run", daemonCmd.Flags().Lookup("dry-run"))
 	viper.BindPFlag("daemon.timezone", daemonCmd.Flags().Lookup("timezone"))
+	viper.BindPFlag("daemon.sync-state", daemonCmd.Flags().Lookup("sync-state"))
 }

@@ -82,6 +82,11 @@ clim8 daemon --verbose
 clim8 daemon --timezone "America/Los_Angeles"
 ```
 
+### Disable state synchronization (not recommended)
+```bash
+clim8 daemon --sync-state=false
+```
+
 ### Run in background (macOS/Linux)
 ```bash
 nohup clim8 daemon > ~/clim8.log 2>&1 &
@@ -96,6 +101,7 @@ nohup clim8 daemon > ~/clim8.log 2>&1 &
 - **Detailed Logging**: Shows what actions are being executed and when
 - **Single Instance**: Prevents multiple daemons from running simultaneously
 - **Security Checks**: Warns if config file has insecure permissions
+- **State Synchronization**: Automatically checks and corrects device state after system wake/hibernation
 
 ## Security Considerations
 
@@ -187,4 +193,20 @@ clim8 daemon --dry-run --verbose
 1. **No schedule items found**: Check your config file path and YAML syntax
 2. **Authentication failed**: Verify your email and password in the config
 3. **Actions not executing**: Ensure times are in correct format and check system time
-4. **Permission denied**: Make sure config file is readable by the user running the daemon 
+4. **Permission denied**: Make sure config file is readable by the user running the daemon
+5. **Device state out of sync after wake**: The daemon automatically detects and corrects this. If issues persist, check logs for sync warnings
+
+### State Synchronization
+
+The daemon automatically checks if your Eight Sleep device is in the correct state based on your schedule. This is especially useful when:
+
+- Your computer goes to sleep/hibernation and misses scheduled events
+- The device was manually controlled outside of the daemon
+- Network connectivity was temporarily lost
+
+The daemon will:
+1. Determine what the device state should be based on the most recent scheduled action
+2. Check the actual device state via the Eight Sleep API
+3. Automatically correct any mismatches by executing the appropriate action
+
+This feature can be disabled with `--sync-state=false` if needed.
